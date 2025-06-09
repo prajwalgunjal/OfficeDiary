@@ -4,42 +4,136 @@
     <p>Customize your OfficeDiary experience</p>
   </div>
 
+  <!-- Appearance Section -->
   <div class="settings-section">
     <h2>Appearance</h2>
+    
     <div class="setting-item">
       <div class="setting-info">
         <h3>Theme</h3>
         <p>Choose between light and dark mode</p>
       </div>
-      <button class="theme-toggle-btn" (click)="themeService.toggleTheme()">
+      
+      <button class="theme-toggle-btn" (click)="toggleTheme()">
         <span class="theme-icon">{{ (themeService.isDarkMode$ | async) ? '☀️' : '🌙' }}</span>
         <span class="theme-text">{{ (themeService.isDarkMode$ | async) ? 'Light Mode' : 'Dark Mode' }}</span>
       </button>
     </div>
   </div>
 
+  <!-- Notifications Section -->
   <div class="settings-section">
     <h2>Notifications</h2>
+    
     <div class="setting-item">
       <div class="setting-info">
         <h3>Status Reminders</h3>
         <p>Get reminded to update your daily status</p>
       </div>
+      
       <label class="toggle-switch">
-        <input type="checkbox" checked>
+        <input type="checkbox">
         <span class="slider"></span>
       </label>
     </div>
   </div>
 
+  <!-- Integration Section -->
   <div class="settings-section">
     <h2>Integration</h2>
+    
     <div class="setting-item">
       <div class="setting-info">
         <h3>Google Chat</h3>
         <p>Configure your Google Chat webhook URL</p>
+        <div class="config-status" *ngIf="googleChatConfig">
+          <span class="status-indicator" [class.active]="googleChatConfig.isActive">
+            {{ googleChatConfig.isActive ? '🟢 Active' : '🔴 Inactive' }}
+          </span>
+          <span class="config-url">{{ googleChatConfig.googleChatWebhookUrl | slice:0:50 }}...</span>
+        </div>
       </div>
-      <button class="config-btn">Configure</button>
+      
+      <div class="config-actions">
+        <button class="config-btn" (click)="openGoogleChatConfig()">
+          {{ googleChatConfig ? 'Manage' : 'Configure' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Google Chat Configuration Modal -->
+<div class="modal-overlay" *ngIf="showGoogleChatModal" (click)="closeGoogleChatModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Google Chat Configuration</h3>
+      <button class="close-btn" (click)="closeGoogleChatModal()">×</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="webhookUrl">Webhook URL</label>
+        <input 
+          type="url" 
+          id="webhookUrl" 
+          [(ngModel)]="webhookUrl" 
+          placeholder="https://chat.googleapis.com/v1/spaces/..."
+          class="form-input"
+          [class.error]="configurationError && !isValidWebhookUrl(webhookUrl)"
+        >
+        <small class="help-text">
+          Enter your Google Chat webhook URL. You can find this in your Google Chat space settings.
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input 
+            type="checkbox" 
+            [(ngModel)]="isGoogleChatActive"
+            class="checkbox-input"
+          >
+          <span class="checkbox-text">Enable Google Chat integration</span>
+        </label>
+      </div>
+
+      <!-- Status Messages -->
+      <div class="status-messages">
+        <div class="success-message" *ngIf="configurationMessage">
+          {{ configurationMessage }}
+        </div>
+        <div class="error-message" *ngIf="configurationError">
+          {{ configurationError }}
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button 
+        class="btn btn-secondary" 
+        (click)="testGoogleChatConnection()"
+        [disabled]="!webhookUrl.trim() || isTesting"
+      >
+        {{ isTesting ? 'Testing...' : 'Test Connection' }}
+      </button>
+      
+      <button 
+        class="btn btn-primary" 
+        (click)="saveGoogleChatConfiguration()"
+        [disabled]="!webhookUrl.trim() || isConfiguring"
+      >
+        {{ isConfiguring ? 'Saving...' : 'Save Configuration' }}
+      </button>
+      
+      <button 
+        class="btn btn-danger" 
+        *ngIf="googleChatConfig"
+        (click)="deleteGoogleChatConfiguration()"
+        [disabled]="isConfiguring"
+      >
+        Delete
+      </button>
     </div>
   </div>
 </div>
