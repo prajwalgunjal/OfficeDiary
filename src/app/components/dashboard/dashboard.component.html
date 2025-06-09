@@ -1,0 +1,197 @@
+<div class="dashboard">
+  <div class="dashboard-header">
+    <h1>Daily Status Update</h1>
+    <div class="header-actions">
+      <button class="schedule-task-btn" (click)="toggleScheduleModal()">
+        <span class="btn-icon">📅</span>
+        Schedule Task
+      </button>
+      <button class="add-task-btn" (click)="addTask()">
+        <span>+</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="tasks-section">
+    <div *ngFor="let task of tasks; let i = index" class="task-card">
+      <div class="task-header">
+        <h3>Task {{ i + 1 }}</h3>
+        <button class="remove-task-btn" (click)="removeTask(i)">×</button>
+      </div>
+
+      <div class="task-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Day Type</label>
+            <select 
+              [(ngModel)]="task.type" 
+              (ngModelChange)="updatePreview()"
+              class="form-select">
+              <option value="start">Day Start</option>
+              <option value="end">Day End</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select 
+              [(ngModel)]="task.status" 
+              (ngModelChange)="updatePreview()"
+              class="form-select">
+              <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Task Title *</label>
+          <input 
+            type="text" 
+            [(ngModel)]="task.title" 
+            (ngModelChange)="updatePreview()"
+            placeholder="Enter task title" 
+            class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>ClickUp ID</label>
+          <input 
+            type="text" 
+            [(ngModel)]="task.clickupId" 
+            (ngModelChange)="updatePreview()"
+            placeholder="Enter ClickUp ID (optional)" 
+            class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>Additional Notes</label>
+          <textarea 
+            [(ngModel)]="task.additionalNotes" 
+            (ngModelChange)="updatePreview()"
+            placeholder="Add any additional notes (optional)" 
+            class="form-textarea"
+            rows="3"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="message-section">
+    <div class="section-header">
+      <span class="section-icon">🎯</span>
+      <h2>Message Template & Preview</h2>
+    </div>
+
+    <div class="template-grid">
+      <div 
+        *ngFor="let template of messageService.templates" 
+        class="template-card"
+        [class.selected]="(messageService.selectedTemplate$ | async) === template.id"
+        (click)="selectTemplate(template.id)">
+        <div class="template-icon">{{ template.icon }}</div>
+        <div class="template-name">{{ template.name }}</div>
+      </div>
+    </div>
+
+    <div class="preview-section">
+      <div class="preview-header">
+        <span class="preview-icon">👀</span>
+        <h3>Live Preview</h3>
+      </div>
+      <div class="preview-content">
+        <pre>{{ livePreview }}</pre>
+      </div>
+    </div>
+
+    <button 
+      class="send-btn" 
+      (click)="sendToGoogleChat()" 
+      [disabled]="isLoading || tasks.length === 0">
+      <span class="send-icon">📤</span>
+      {{ isLoading ? 'Sending...' : 'Send to Google Chat' }}
+    </button>
+  </div>
+
+  <!-- Schedule Task Modal -->
+  <div class="modal-overlay" *ngIf="showScheduleModal" (click)="closeScheduleModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>📅 Schedule Task</h2>
+        <button class="modal-close-btn" (click)="closeScheduleModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Task Title *</label>
+          <input 
+            type="text" 
+            [(ngModel)]="scheduledTask.title" 
+            placeholder="Enter task title" 
+            class="form-input">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Day Type</label>
+            <select [(ngModel)]="scheduledTask.type" class="form-select">
+              <option value="start">Day Start</option>
+              <option value="end">Day End</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select [(ngModel)]="scheduledTask.status" class="form-select">
+              <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Scheduled Date *</label>
+            <input 
+              type="date" 
+              [(ngModel)]="scheduledTask.scheduledDate" 
+              [min]="minDate"
+              class="form-input">
+          </div>
+          <div class="form-group">
+            <label>Scheduled Time *</label>
+            <input 
+              type="time" 
+              [(ngModel)]="scheduledTask.scheduledTime" 
+              class="form-input">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>ClickUp ID</label>
+          <input 
+            type="text" 
+            [(ngModel)]="scheduledTask.clickupId" 
+            placeholder="Enter ClickUp ID (optional)" 
+            class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>Additional Notes</label>
+          <textarea 
+            [(ngModel)]="scheduledTask.additionalNotes" 
+            placeholder="Add any additional notes (optional)" 
+            class="form-textarea"
+            rows="3"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="cancel-btn" (click)="closeScheduleModal()">Cancel</button>
+        <button 
+          class="schedule-btn" 
+          (click)="scheduleTask()" 
+          [disabled]="isScheduling || !scheduledTask.title || !scheduledTask.scheduledDate || !scheduledTask.scheduledTime">
+          <span class="btn-icon">📅</span>
+          {{ isScheduling ? 'Scheduling...' : 'Schedule Task' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

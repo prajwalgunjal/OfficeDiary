@@ -1,0 +1,45 @@
+<div class="settings">
+  <div class="settings-header">
+    <h1>⚙️ Settings</h1>
+    <p>Customize your OfficeDiary experience</p>
+  </div>
+
+  <div class="settings-section">
+    <h2>Appearance</h2>
+    <div class="setting-item">
+      <div class="setting-info">
+        <h3>Theme</h3>
+        <p>Choose between light and dark mode</p>
+      </div>
+      <button class="theme-toggle-btn" (click)="themeService.toggleTheme()">
+        <span class="theme-icon">{{ (themeService.isDarkMode$ | async) ? '☀️' : '🌙' }}</span>
+        <span class="theme-text">{{ (themeService.isDarkMode$ | async) ? 'Light Mode' : 'Dark Mode' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <h2>Notifications</h2>
+    <div class="setting-item">
+      <div class="setting-info">
+        <h3>Status Reminders</h3>
+        <p>Get reminded to update your daily status</p>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <h2>Integration</h2>
+    <div class="setting-item">
+      <div class="setting-info">
+        <h3>Google Chat</h3>
+        <p>Configure your Google Chat webhook URL</p>
+      </div>
+      <button class="config-btn">Configure</button>
+    </div>
+  </div>
+</div>
