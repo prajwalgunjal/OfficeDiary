@@ -1,0 +1,118 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="logo">
+        <span class="logo-icon">📊</span>
+        <span class="logo-text">StatusSync</span>
+      </div>
+      <h1>Create Account</h1>
+      <p>Sign up to get started with StatusSync</p>
+    </div>
+
+    <form class="auth-form" (ngSubmit)="onRegister()" #registerForm="ngForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input
+            type="text"
+            id="firstName"
+            name="firstName"
+            [(ngModel)]="registerData.firstName"
+            required
+            class="form-input"
+            placeholder="First name"
+            [class.error]="firstNameError">
+          <div class="error-message" *ngIf="firstNameError">{{ firstNameError }}</div>
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input
+            type="text"
+            id="lastName"
+            name="lastName"
+            [(ngModel)]="registerData.lastName"
+            required
+            class="form-input"
+            placeholder="Last name"
+            [class.error]="lastNameError">
+          <div class="error-message" *ngIf="lastNameError">{{ lastNameError }}</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          [(ngModel)]="registerData.email"
+          required
+          email
+          class="form-input"
+          placeholder="Enter your email"
+          [class.error]="emailError">
+        <div class="error-message" *ngIf="emailError">{{ emailError }}</div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="password-input-container">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            id="password"
+            name="password"
+            [(ngModel)]="registerData.password"
+            required
+            minlength="6"
+            class="form-input"
+            placeholder="Create a password"
+            [class.error]="passwordError">
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="togglePasswordVisibility()">
+            {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+          </button>
+        </div>
+        <div class="error-message" *ngIf="passwordError">{{ passwordError }}</div>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <div class="password-input-container">
+          <input
+            [type]="showConfirmPassword ? 'text' : 'password'"
+            id="confirmPassword"
+            name="confirmPassword"
+            [(ngModel)]="registerData.confirmPassword"
+            required
+            class="form-input"
+            placeholder="Confirm your password"
+            [class.error]="confirmPasswordError">
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="toggleConfirmPasswordVisibility()">
+            {{ showConfirmPassword ? '👁️' : '👁️‍🗨️' }}
+          </button>
+        </div>
+        <div class="error-message" *ngIf="confirmPasswordError">{{ confirmPasswordError }}</div>
+      </div>
+
+      <div class="error-message" *ngIf="registerError">{{ registerError }}</div>
+
+      <button
+        type="submit"
+        class="auth-btn"
+        [disabled]="isLoading || !registerForm.valid">
+        <span *ngIf="isLoading" class="loading-spinner">⏳</span>
+        {{ isLoading ? 'Creating Account...' : 'Create Account' }}
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Already have an account? <a routerLink="/login" class="auth-link">Sign in here</a></p>
+    </div>
+  </div>
+</div>

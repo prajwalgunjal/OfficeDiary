@@ -2,7 +2,7 @@
   <div class="sidebar-header">
     <div class="logo">
       <span class="logo-icon">📊</span>
-      <span class="logo-text">OfficeDiary</span>
+      <span class="logo-text">StatusSync</span>
     </div>
     <button class="theme-toggle" (click)="themeService.toggleTheme()">
       <span>{{ (themeService.isDarkMode$ | async) ? '☀️' : '🌙' }}</span>
@@ -25,9 +25,9 @@
   </nav>
 
   <div class="sidebar-footer">
-    <div class="user-info">
-      <div class="user-avatar">PG</div>
-      <span class="user-name">Prajwal Gunjal</span>
+    <div class="user-info" *ngIf="currentUser">
+      <div class="user-avatar">{{ currentUser.initials }}</div>
+      <span class="user-name">{{ currentUser.fullName }}</span>
     </div>
   </div>
 </aside>

@@ -1,6 +1,10 @@
-<div class="app-container" [class.dark]="(themeService.isDarkMode$ | async)">
+<div class="app-container" [class.dark]="(themeService.isDarkMode$ | async)" *ngIf="(authService.isAuthenticated$ | async); else authTemplate">
   <app-sidebar></app-sidebar>
   <main class="main-content">
     <router-outlet></router-outlet>
   </main>
 </div>
+
+<ng-template #authTemplate>
+  <router-outlet></router-outlet>
+</ng-template>

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterModule } from '@angular/router';
 import { ThemeService } from './services/theme.service';
+import { AuthService } from './services/auth.service';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 
 @Component({
@@ -12,9 +13,15 @@ import { SidebarComponent } from './components/sidebar/sidebar.component';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  title = 'OfficeDiary';
+  title = 'StatusSync';
+  public authService: AuthService;
 
-  constructor(public themeService: ThemeService) {}
+  constructor(
+    public themeService: ThemeService,
+    authService: AuthService
+  ) {
+    this.authService = authService;
+  }
 
   ngOnInit() {
     this.themeService.initializeTheme();
