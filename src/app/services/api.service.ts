@@ -39,7 +39,7 @@ export interface WebhookConfigData {
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl = 'https://localhost:44329/api/Task'; // Replace with your backend URL
+  private baseUrl = 'https://localhost:44329/api/'; // Replace with your backend URL
 
   constructor(
     private http: HttpClient,
@@ -47,7 +47,7 @@ export class ApiService {
   ) {}
 
   sendToGoogleChat(data: StatusUpdateData): Observable<any> {
-    return this.http.post(`${this.baseUrl}/SendWebhook`, data, {
+    return this.http.post(`${this.baseUrl}Task/SendToGoogleChat`, data, {
       headers: this.authService.getAuthHeaders()
     });
   }
@@ -59,7 +59,7 @@ export class ApiService {
   }
 
   scheduleTask(data: ScheduleTaskData): Observable<any> {
-    return this.http.post(`${this.baseUrl}/schedule-task`, data, {
+    return this.http.post(`${this.baseUrl}Task/ScheduleTask`, data, {
       headers: this.authService.getAuthHeaders()
     });
   }
