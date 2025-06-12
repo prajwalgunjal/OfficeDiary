@@ -65,7 +65,7 @@ export class ApiService {
   }
 
   configureWebhook(data: WebhookConfigData): Observable<any> {
-    return this.http.post(`${this.baseUrl}/configure-webhook`, data, {
+    return this.http.post(`${this.baseUrl}Task/SaveWebhooksURL`, data, {
       headers: this.authService.getAuthHeaders()
     });
   }
