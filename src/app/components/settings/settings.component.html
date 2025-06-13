@@ -1,7 +1,7 @@
 <div class="settings">
   <div class="settings-header">
     <h1>⚙️ Settings</h1>
-    <p>Customize your StatusSync experience</p>
+    <p>Customize your OfficeDiary experience</p>
   </div>
 
   <div class="settings-section">
@@ -19,19 +19,62 @@
   </div>
 
   <div class="settings-section">
+    <h2>Task Management</h2>
+    <div class="setting-item">
+      <div class="setting-info">
+        <h3>Scheduled Tasks</h3>
+        <p>View all your scheduled tasks and their status</p>
+      </div>
+      <button class="action-btn" (click)="getScheduledTasks()">
+        <span class="btn-icon">📅</span>
+        Get Scheduled Tasks
+      </button>
+    </div>
+
+    <div class="setting-item">
+      <div class="setting-info">
+        <h3>Posted Tasks</h3>
+        <p>View all tasks that have been posted to Google Chat</p>
+      </div>
+      <button class="action-btn" (click)="getPostedTasks()">
+        <span class="btn-icon">📤</span>
+        Get Posted Tasks
+      </button>
+    </div>
+  </div>
+
+  <div class="settings-section">
     <h2>Integration</h2>
     <div class="setting-item">
       <div class="setting-info">
-        <h3>Google Chat Webhook</h3>
-        <p>Configure your Google Chat webhook URL for status updates</p>
-        <div class="current-config" *ngIf="currentWebhookUrl">
-          <span class="config-label">Current URL:</span>
-          <span class="config-value">{{ currentWebhookUrl }}</span>
+        <h3>Google Chat Webhooks</h3>
+        <p>Configure your Google Chat webhook URLs for status updates</p>
+        <div class="webhook-urls" *ngIf="showWebhookUrls && webhookUrls.length > 0">
+          <div class="webhook-item" *ngFor="let webhook of webhookUrls; let i = index">
+            <div class="webhook-info">
+              <span class="webhook-label">Webhook {{ i + 1 }}:</span>
+              <span class="webhook-url">{{ webhook.url }}</span>
+            </div>
+            <button class="delete-webhook-btn" (click)="deleteWebhook(webhook.id)">
+              <span>🗑️</span>
+            </button>
+          </div>
         </div>
       </div>
-      <button class="config-btn" (click)="openWebhookModal()">
-        {{ currentWebhookUrl ? 'Update' : 'Configure' }}
-      </button>
+      <div class="webhook-actions">
+        <button class="config-btn" (click)="toggleWebhookUrls()" *ngIf="!showWebhookUrls">
+          <span class="btn-icon">👁️</span>
+          Show Configured URLs
+        </button>
+        <button class="config-btn secondary" (click)="toggleWebhookUrls()" *ngIf="showWebhookUrls">
+          <span class="btn-icon">👁️‍🗨️</span>
+          Hide URLs
+        </button>
+        <button class="config-btn" (click)="openWebhookModal()">
+          <span class="btn-icon">➕</span>
+          Add Webhook URL
+        </button>
+      </div>
     </div>
   </div>
 
@@ -40,7 +83,7 @@
     <div class="setting-item">
       <div class="setting-info">
         <h3>Sign Out</h3>
-        <p>Sign out of your StatusSync account</p>
+        <p>Sign out of your OfficeDiary account</p>
       </div>
       <button class="logout-btn" (click)="logout()">
         <span class="logout-icon">🚪</span>
@@ -49,20 +92,40 @@
     </div>
   </div>
 
+  <!-- Success/Error Popup -->
+  <div class="popup-overlay" *ngIf="showPopup" (click)="closePopup()">
+    <div class="popup-content" [class.success]="popupType === 'success'" [class.error]="popupType === 'error'">
+      <div class="popup-icon">
+        {{ popupType === 'success' ? '✅' : '❌' }}
+      </div>
+      <div class="popup-message">{{ popupMessage }}</div>
+      <button class="popup-close-btn" (click)="closePopup()">Close</button>
+    </div>
+  </div>
+
   <!-- Webhook Configuration Modal -->
   <div class="modal-overlay" *ngIf="showWebhookModal" (click)="closeWebhookModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2>🔗 Configure Google Chat Webhook</h2>
+        <h2>🔗 Add Google Chat Webhook</h2>
         <button class="modal-close-btn" (click)="closeWebhookModal()">×</button>
       </div>
 
       <div class="modal-body">
         <div class="form-group">
+          <label>Webhook Name</label>
+          <input 
+            type="text" 
+            [(ngModel)]="newWebhook.name" 
+            placeholder="Enter webhook name (e.g., Team Chat)" 
+            class="form-input">
+        </div>
+
+        <div class="form-group">
           <label>Webhook URL *</label>
           <input 
             type="url" 
-            [(ngModel)]="webhookUrl" 
+            [(ngModel)]="newWebhook.url" 
             placeholder="https://chat.googleapis.com/v1/spaces/..." 
             class="form-input"
             [class.error]="webhookError">
@@ -83,11 +146,51 @@
         <button class="cancel-btn" (click)="closeWebhookModal()">Cancel</button>
         <button 
           class="save-btn" 
-          (click)="saveWebhookConfig()" 
-          [disabled]="isSaving || !webhookUrl">
+          (click)="addWebhookUrl()" 
+          [disabled]="isSaving || !newWebhook.url">
           <span class="btn-icon" *ngIf="isSaving">⏳</span>
-          {{ isSaving ? 'Saving...' : 'Save Configuration' }}
+          {{ isSaving ? 'Adding...' : 'Add Webhook' }}
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tasks Modal -->
+  <div class="modal-overlay" *ngIf="showTasksModal" (click)="closeTasksModal()">
+    <div class="modal-content large-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ tasksModalTitle }}</h2>
+        <button class="modal-close-btn" (click)="closeTasksModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="tasks-list" *ngIf="tasksList.length > 0; else noTasks">
+          <div class="task-item" *ngFor="let task of tasksList">
+            <div class="task-header">
+              <h4>{{ task.title }}</h4>
+              <span class="task-status" [class]="getStatusClass(task.status)">
+                {{ task.status }}
+              </span>
+            </div>
+            <div class="task-details">
+              <p><strong>Type:</strong> {{ task.type === 'start' ? 'Day Start' : 'Day End' }}</p>
+              <p *ngIf="task.clickupId"><strong>ClickUp ID:</strong> {{ task.clickupId }}</p>
+              <p *ngIf="task.scheduledDate"><strong>Scheduled:</strong> {{ task.scheduledDate }} {{ task.scheduledTime }}</p>
+              <p *ngIf="task.additionalNotes"><strong>Notes:</strong> {{ task.additionalNotes }}</p>
+              <p *ngIf="task.postedAt"><strong>Posted At:</strong> {{ task.postedAt | date:'medium' }}</p>
+            </div>
+          </div>
+        </div>
+        <ng-template #noTasks>
+          <div class="no-tasks">
+            <div class="no-tasks-icon">📝</div>
+            <p>No tasks found</p>
+          </div>
+        </ng-template>
+      </div>
+
+      <div class="modal-footer">
+        <button class="cancel-btn" (click)="closeTasksModal()">Close</button>
       </div>
     </div>
   </div>

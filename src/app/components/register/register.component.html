@@ -3,10 +3,10 @@
     <div class="auth-header">
       <div class="logo">
         <span class="logo-icon">📊</span>
-        <span class="logo-text">StatusSync</span>
+        <span class="logo-text">OfficeDiary</span>
       </div>
       <h1>Create Account</h1>
-      <p>Sign up to get started with StatusSync</p>
+      <p>Sign up to get started with OfficeDiary</p>
     </div>
 
     <form class="auth-form" (ngSubmit)="onRegister()" #registerForm="ngForm">
@@ -37,6 +37,36 @@
             placeholder="Last name"
             [class.error]="lastNameError">
           <div class="error-message" *ngIf="lastNameError">{{ lastNameError }}</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            [(ngModel)]="registerData.username"
+            required
+            class="form-input"
+            placeholder="Choose username"
+            [class.error]="usernameError">
+          <div class="error-message" *ngIf="usernameError">{{ usernameError }}</div>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            [(ngModel)]="registerData.phone"
+            required
+            class="form-input"
+            placeholder="Phone number"
+            [class.error]="phoneError">
+          <div class="error-message" *ngIf="phoneError">{{ phoneError }}</div>
         </div>
       </div>
 

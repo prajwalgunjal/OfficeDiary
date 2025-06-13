@@ -13,7 +13,7 @@ import { SidebarComponent } from './components/sidebar/sidebar.component';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  title = 'StatusSync';
+  title = 'OfficeDiary';
   public authService: AuthService;
 
   constructor(

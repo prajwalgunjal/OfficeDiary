@@ -3,6 +3,8 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  username?: string;
+  phone?: string;
   fullName: string;
   initials: string;
 }
@@ -15,6 +17,8 @@ export interface LoginRequest {
 export interface RegisterRequest {
   firstName: string;
   lastName: string;
+  username: string;
+  phone: string;
   email: string;
   password: string;
   confirmPassword: string;

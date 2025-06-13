@@ -111,6 +111,17 @@
     </button>
   </div>
 
+  <!-- Success/Error Popup -->
+  <div class="popup-overlay" *ngIf="showPopup" (click)="closePopup()">
+    <div class="popup-content" [class.success]="popupType === 'success'" [class.error]="popupType === 'error'">
+      <div class="popup-icon">
+        {{ popupType === 'success' ? '✅' : '❌' }}
+      </div>
+      <div class="popup-message">{{ popupMessage }}</div>
+      <button class="popup-close-btn" (click)="closePopup()">Close</button>
+    </div>
+  </div>
+
   <!-- Schedule Task Modal -->
   <div class="modal-overlay" *ngIf="showScheduleModal" (click)="closeScheduleModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">

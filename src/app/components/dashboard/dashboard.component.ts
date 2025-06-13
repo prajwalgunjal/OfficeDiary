@@ -20,6 +20,11 @@ export class DashboardComponent implements OnInit {
   isScheduling = false;
   minDate = '';
 
+  // Success/Error popup properties
+  showPopup = false;
+  popupType: 'success' | 'error' = 'success';
+  popupMessage = '';
+
   scheduledTask: ScheduledTaskData = {
     title: '',
     status: 'Not Started',
@@ -88,8 +93,10 @@ export class DashboardComponent implements OnInit {
     try {
       await this.apiService.sendToGoogleChat(statusData).toPromise();
       console.log('Status sent successfully!');
+      this.showPopupMessage('Status update sent successfully to Google Chat!', 'success');
     } catch (error) {
       console.error('Failed to send status:', error);
+      this.showPopupMessage('Failed to send status update. Please try again.', 'error');
     } finally {
       this.isLoading = false;
     }
@@ -132,11 +139,30 @@ export class DashboardComponent implements OnInit {
     try {
       await this.apiService.scheduleTask(scheduleData).toPromise();
       console.log('Task scheduled successfully!');
+      this.showPopupMessage('Task scheduled successfully!', 'success');
       this.closeScheduleModal();
     } catch (error) {
       console.error('Failed to schedule task:', error);
+      this.showPopupMessage('Failed to schedule task. Please try again.', 'error');
     } finally {
       this.isScheduling = false;
     }
+  }
+
+  // Popup Management
+  showPopupMessage(message: string, type: 'success' | 'error'): void {
+    this.popupMessage = message;
+    this.popupType = type;
+    this.showPopup = true;
+
+    // Auto-close popup after 3 seconds
+    setTimeout(() => {
+      this.closePopup();
+    }, 3000);
+  }
+
+  closePopup(): void {
+    this.showPopup = false;
+    this.popupMessage = '';
   }
 }

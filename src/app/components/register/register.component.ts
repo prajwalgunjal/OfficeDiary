@@ -16,6 +16,8 @@ export class RegisterComponent {
   registerData: RegisterRequest = {
     firstName: '',
     lastName: '',
+    username: '',
+    phone: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -27,6 +29,8 @@ export class RegisterComponent {
   registerError = '';
   firstNameError = '';
   lastNameError = '';
+  usernameError = '';
+  phoneError = '';
   emailError = '';
   passwordError = '';
   confirmPasswordError = '';
@@ -47,6 +51,8 @@ export class RegisterComponent {
   validateForm(): boolean {
     this.firstNameError = '';
     this.lastNameError = '';
+    this.usernameError = '';
+    this.phoneError = '';
     this.emailError = '';
     this.passwordError = '';
     this.confirmPasswordError = '';
@@ -61,6 +67,22 @@ export class RegisterComponent {
 
     if (!this.registerData.lastName.trim()) {
       this.lastNameError = 'Last name is required';
+      isValid = false;
+    }
+
+    if (!this.registerData.username.trim()) {
+      this.usernameError = 'Username is required';
+      isValid = false;
+    } else if (this.registerData.username.length < 3) {
+      this.usernameError = 'Username must be at least 3 characters';
+      isValid = false;
+    }
+
+    if (!this.registerData.phone.trim()) {
+      this.phoneError = 'Phone number is required';
+      isValid = false;
+    } else if (!this.isValidPhone(this.registerData.phone)) {
+      this.phoneError = 'Please enter a valid phone number';
       isValid = false;
     }
 
@@ -96,6 +118,11 @@ export class RegisterComponent {
     return emailRegex.test(email);
   }
 
+  private isValidPhone(phone: string): boolean {
+    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+    return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
+  }
+
   async onRegister(): Promise<void> {
     if (!this.validateForm()) {
       return;
@@ -107,7 +134,8 @@ export class RegisterComponent {
     try {
       const response = await this.authService.register(this.registerData).toPromise();
       console.log('Registration successful:', response);
-      this.router.navigate(['/dashboard']);
+      // Redirect to login page after successful registration
+      this.router.navigate(['/login']);
     } catch (error: any) {
       console.error('Registration failed:', error);
       this.registerError = error.error?.message || 'Registration failed. Please try again.';
