@@ -18,6 +18,13 @@
   }
 }
 
+.auth-only-container {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
 .main-content {
   flex: 1;
   padding: 2rem;

@@ -66,13 +66,13 @@ export class ApiService {
 
   // Webhook Management
   addWebhookUrl(data: { name: string; url: string }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/Task/SaveWebhooksURL`, data, {
+    return this.http.post(`${this.baseUrl}Task/SaveWebhooksURL`, data, {
       headers: this.authService.getAuthHeaders()
     });
   }
 
   getWebhookUrls(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/webhooks`, {
+    return this.http.get(`${this.baseUrl}Task/GetWebhooks`, {
       headers: this.authService.getAuthHeaders()
     });
   }
