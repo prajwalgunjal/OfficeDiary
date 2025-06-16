@@ -3,13 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ThemeService } from '../../services/theme.service';
 import { AuthService } from '../../services/auth.service';
-import { ApiService, WebhookConfigData } from '../../services/api.service';
-
-interface WebhookUrl {
-  id: string;
-  name: string;
-  url: string;
-}
+import { ApiService, WebhookConfigData, ResponseModel, WebhookResponse } from '../../services/api.service';
 
 interface TaskItem {
   id: string;
@@ -36,7 +30,7 @@ export class SettingsComponent implements OnInit {
   showTasksModal = false;
   showPopup = false;
   
-  webhookUrls: WebhookUrl[] = [];
+  webhookUrls: string[] = []; // Array of webhook URLs
   newWebhook = { name: '', url: '' };
   webhookError = '';
   isSaving = false;
@@ -68,10 +62,22 @@ export class SettingsComponent implements OnInit {
   async loadWebhookUrls(): Promise<void> {
     try {
       const response = await this.apiService.getWebhookUrls().toPromise();
-      this.webhookUrls = response.webhooks || [];
-    } catch (error) {
+      console.log('Webhook response:', response);
+      
+      if (response && response.webhooksUrl) {
+        // Handle the webhooksUrl array from your backend response
+        this.webhookUrls = Array.isArray(response.webhooksUrl) ? response.webhooksUrl : [];
+        console.log('Loaded webhook URLs:', this.webhookUrls);
+        this.showPopupMessage(`${this.webhookUrls.length} webhook URL(s) loaded successfully!`, 'success');
+      } else {
+        this.webhookUrls = [];
+        this.showPopupMessage('No webhook URLs found', 'success');
+      }
+    } catch (error: any) {
       console.error('Failed to load webhook URLs:', error);
-      this.showPopupMessage('Failed to load webhook URLs', 'error');
+      this.webhookUrls = [];
+      const errorMessage = error.error?.message || error.message || 'Failed to load webhook URLs';
+      this.showPopupMessage(errorMessage, 'error');
     }
   }
 
@@ -122,31 +128,48 @@ export class SettingsComponent implements OnInit {
     };
 
     try {
-      await this.apiService.addWebhookUrl(configData).toPromise();
-      await this.loadWebhookUrls();
-      this.closeWebhookModal();
-      this.showPopupMessage('Webhook URL added successfully!', 'success');
-    } catch (error) {
+      const response = await this.apiService.addWebhookUrl(configData).toPromise();
+      console.log('Add webhook response:', response);
+      
+      if (response && response.message) {
+        // Reload the webhook URLs to get the updated list
+        await this.loadWebhookUrls();
+        this.closeWebhookModal();
+        this.showPopupMessage(response.message, 'success');
+      } else {
+        this.webhookError = 'Failed to add webhook URL';
+        this.showPopupMessage('Failed to add webhook URL', 'error');
+      }
+    } catch (error: any) {
       console.error('Failed to add webhook URL:', error);
-      this.webhookError = 'Failed to add webhook URL. Please try again.';
-      this.showPopupMessage('Failed to add webhook URL', 'error');
+      const errorMessage = error.error?.message || error.message || 'Failed to add webhook URL. Please try again.';
+      this.webhookError = errorMessage;
+      this.showPopupMessage(errorMessage, 'error');
     } finally {
       this.isSaving = false;
     }
   }
 
-  async deleteWebhook(webhookId: string): Promise<void> {
+  async deleteWebhook(webhookUrl: string): Promise<void> {
     if (!confirm('Are you sure you want to delete this webhook URL?')) {
       return;
     }
 
     try {
-      await this.apiService.deleteWebhookUrl(webhookId).toPromise();
-      await this.loadWebhookUrls();
-      this.showPopupMessage('Webhook URL deleted successfully!', 'success');
-    } catch (error) {
+      const response = await this.apiService.deleteWebhookUrl(webhookUrl).toPromise();
+      console.log('Delete webhook response:', response);
+      
+      if (response && response.message) {
+        // Reload the webhook URLs to get the updated list
+        await this.loadWebhookUrls();
+        this.showPopupMessage(response.message, 'success');
+      } else {
+        this.showPopupMessage('Failed to delete webhook URL', 'error');
+      }
+    } catch (error: any) {
       console.error('Failed to delete webhook URL:', error);
-      this.showPopupMessage('Failed to delete webhook URL', 'error');
+      const errorMessage = error.error?.message || error.message || 'Failed to delete webhook URL';
+      this.showPopupMessage(errorMessage, 'error');
     }
   }
 
@@ -154,24 +177,48 @@ export class SettingsComponent implements OnInit {
   async getScheduledTasks(): Promise<void> {
     try {
       const response = await this.apiService.getScheduledTasks().toPromise();
-      this.tasksList = response.tasks || [];
-      this.tasksModalTitle = '📅 Scheduled Tasks';
-      this.showTasksModal = true;
-    } catch (error) {
+      console.log('Scheduled tasks response:', response);
+      
+      if (response && response.Success) {
+        this.tasksList = Array.isArray(response.Data) ? response.Data : [];
+        this.tasksModalTitle = `📅 Scheduled Tasks (${this.tasksList.length})`;
+        this.showTasksModal = true;
+        this.showPopupMessage(`${this.tasksList.length} scheduled task(s) loaded successfully!`, 'success');
+      } else {
+        this.tasksList = [];
+        this.tasksModalTitle = '📅 Scheduled Tasks (0)';
+        this.showTasksModal = true;
+        this.showPopupMessage(response?.Message || 'No scheduled tasks found', 'success');
+      }
+    } catch (error: any) {
       console.error('Failed to get scheduled tasks:', error);
-      this.showPopupMessage('Failed to load scheduled tasks', 'error');
+      this.tasksList = [];
+      const errorMessage = error.error?.Message || error.message || 'Failed to load scheduled tasks';
+      this.showPopupMessage(errorMessage, 'error');
     }
   }
 
   async getPostedTasks(): Promise<void> {
     try {
       const response = await this.apiService.getPostedTasks().toPromise();
-      this.tasksList = response.tasks || [];
-      this.tasksModalTitle = '📤 Posted Tasks';
-      this.showTasksModal = true;
-    } catch (error) {
+      console.log('Posted tasks response:', response);
+      
+      if (response && response.Success) {
+        this.tasksList = Array.isArray(response.Data) ? response.Data : [];
+        this.tasksModalTitle = `📤 Posted Tasks (${this.tasksList.length})`;
+        this.showTasksModal = true;
+        this.showPopupMessage(`${this.tasksList.length} posted task(s) loaded successfully!`, 'success');
+      } else {
+        this.tasksList = [];
+        this.tasksModalTitle = '📤 Posted Tasks (0)';
+        this.showTasksModal = true;
+        this.showPopupMessage(response?.Message || 'No posted tasks found', 'success');
+      }
+    } catch (error: any) {
       console.error('Failed to get posted tasks:', error);
-      this.showPopupMessage('Failed to load posted tasks', 'error');
+      this.tasksList = [];
+      const errorMessage = error.error?.Message || error.message || 'Failed to load posted tasks';
+      this.showPopupMessage(errorMessage, 'error');
     }
   }
 
@@ -191,10 +238,10 @@ export class SettingsComponent implements OnInit {
     this.popupType = type;
     this.showPopup = true;
 
-    // Auto-close popup after 3 seconds
+    // Auto-close popup after 4 seconds for better UX
     setTimeout(() => {
       this.closePopup();
-    }, 3000);
+    }, 4000);
   }
 
   closePopup(): void {

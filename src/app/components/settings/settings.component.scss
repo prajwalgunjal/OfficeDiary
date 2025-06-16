@@ -110,6 +110,21 @@
   }
 }
 
+.no-webhooks {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: var(--bg-primary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  text-align: center;
+
+  p {
+    color: var(--text-muted);
+    font-style: italic;
+    margin: 0;
+  }
+}
+
 .delete-webhook-btn {
   background: none;
   border: none;

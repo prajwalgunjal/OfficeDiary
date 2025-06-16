@@ -35,6 +35,20 @@ export interface WebhookConfigData {
   webhookUrl: string;
 }
 
+// Backend Response Model Interface for standard responses
+export interface ResponseModel<T> {
+  Success: boolean;
+  Message: string;
+  Data: T;
+}
+
+// Backend Response for webhook operations (matches your actual response)
+export interface WebhookResponse {
+  message: string;
+  webhooksUrl: string[];
+  employeeId: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -64,44 +78,44 @@ export class ApiService {
     });
   }
 
-  // Webhook Management
-  addWebhookUrl(data: { name: string; url: string }): Observable<any> {
-    return this.http.post(`${this.baseUrl}Task/SaveWebhooksURL`, data, {
+  // Webhook Management - Updated to match your actual backend response
+  addWebhookUrl(data: { name: string; url: string }): Observable<WebhookResponse> {
+    return this.http.post<WebhookResponse>(`${this.baseUrl}Task/SaveWebhooksURL`, data, {
       headers: this.authService.getAuthHeaders()
     });
   }
 
-  getWebhookUrls(): Observable<any> {
-    return this.http.get(`${this.baseUrl}Task/GetWebhooks`, {
+  getWebhookUrls(): Observable<WebhookResponse> {
+    return this.http.get<WebhookResponse>(`${this.baseUrl}Task/GetWebhooks`, {
       headers: this.authService.getAuthHeaders()
     });
   }
 
-  deleteWebhookUrl(webhookId: string): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/webhooks/${webhookId}`, {
+  deleteWebhookUrl(webhookUrl: string): Observable<WebhookResponse> {
+    return this.http.delete<WebhookResponse>(`${this.baseUrl}Task/DeleteWebhook/${encodeURIComponent(webhookUrl)}`, {
       headers: this.authService.getAuthHeaders()
     });
   }
 
   // Task Management
-  getScheduledTasks(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/scheduled-tasks`, {
+  getScheduledTasks(): Observable<ResponseModel<any[]>> {
+    return this.http.get<ResponseModel<any[]>>(`${this.baseUrl}/Task/GetScheduledTasks`, {
       headers: this.authService.getAuthHeaders()
     });
   }
 
-  getPostedTasks(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/posted-tasks`, {
+  getPostedTasks(): Observable<ResponseModel<any[]>> {
+    return this.http.get<ResponseModel<any[]>>(`${this.baseUrl}/Task/GetPostedTasks`, {
       headers: this.authService.getAuthHeaders()
     });
   }
 
   // Legacy methods for backward compatibility
-  configureWebhook(data: WebhookConfigData): Observable<any> {
+  configureWebhook(data: WebhookConfigData): Observable<WebhookResponse> {
     return this.addWebhookUrl({ name: 'Default Webhook', url: data.webhookUrl });
   }
 
-  getWebhookConfig(): Observable<any> {
+  getWebhookConfig(): Observable<WebhookResponse> {
     return this.getWebhookUrls();
   }
 }
