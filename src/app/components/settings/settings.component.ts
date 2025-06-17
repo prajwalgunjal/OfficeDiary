@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ThemeService } from '../../services/theme.service';
 import { AuthService } from '../../services/auth.service';
-import { ApiService, WebhookConfigData, ResponseModel, WebhookResponse } from '../../services/api.service';
+import { ApiService, WebhookConfigData, ResponseModel, WebhookResponse, WebhookUrlModel, GetWebhooksResponse, TelegramConfigData, TelegramResponse } from '../../services/api.service';
 
 interface TaskItem {
   id: string;
@@ -29,11 +29,20 @@ export class SettingsComponent implements OnInit {
   showWebhookUrls = false;
   showTasksModal = false;
   showPopup = false;
+  showTelegramModal = false;
+  showTelegramConfig = false;
   
-  webhookUrls: string[] = []; // Array of webhook URLs
+  webhookUrls: WebhookUrlModel[] = []; // Array of webhook objects with name and URL
   newWebhook = { name: '', url: '' };
   webhookError = '';
   isSaving = false;
+  
+  // Telegram configuration
+  telegramConfig: TelegramConfigData = { telegramToken: '', channelName: '' };
+  newTelegramConfig: TelegramConfigData = { telegramToken: '', channelName: '' };
+  telegramError = '';
+  isSavingTelegram = false;
+  hasTelegramConfig = false;
   
   popupType: 'success' | 'error' = 'success';
   popupMessage = '';
@@ -59,27 +68,52 @@ export class SettingsComponent implements OnInit {
     }
   }
 
-  async loadWebhookUrls(): Promise<void> {
-    try {
-      const response = await this.apiService.getWebhookUrls().toPromise();
-      console.log('Webhook response:', response);
+  // async loadWebhookUrls(): Promise<void> {
+  //   try {
+  //     const response = await this.apiService.getWebhookUrls().toPromise();
+  //     console.log('Webhook response:', response);
       
-      if (response && response.webhooksUrl) {
-        // Handle the webhooksUrl array from your backend response
-        this.webhookUrls = Array.isArray(response.webhooksUrl) ? response.webhooksUrl : [];
-        console.log('Loaded webhook URLs:', this.webhookUrls);
-        this.showPopupMessage(`${this.webhookUrls.length} webhook URL(s) loaded successfully!`, 'success');
-      } else {
-        this.webhookUrls = [];
-        this.showPopupMessage('No webhook URLs found', 'success');
-      }
-    } catch (error: any) {
-      console.error('Failed to load webhook URLs:', error);
+  //     if (response && response.Success && response.Data) {
+  //       // Handle the Data array from your backend ResponseModel
+  //       this.webhookUrls = Array.isArray(response.Data) ? response.Data : [];
+  //       console.log('Loaded webhook URLs:', this.webhookUrls);
+  //       this.showPopupMessage(`${this.webhookUrls.length} webhook URL(s) loaded successfully!`, 'success');
+  //     } else {
+  //       this.webhookUrls = [];
+  //       this.showPopupMessage(response?.Message || 'No webhook URLs found', 'success');
+  //     }
+  //   } catch (error: any) {
+  //     console.error('Failed to load webhook URLs:', error);
+  //     this.webhookUrls = [];
+  //     const errorMessage = error.error?.Message || error.error?.message || error.message || 'Failed to load webhook URLs';
+  //     this.showPopupMessage(errorMessage, 'error');
+  //   }
+  // }
+// Updated TypeScript method
+async loadWebhookUrls(): Promise<void> {
+  try {
+    const response: any = await this.apiService.getWebhookUrls().toPromise();
+    console.log('Raw response:', response);
+    
+    if (response?.webhooksUrl && Array.isArray(response.webhooksUrl)) {
+      // Transform lowercase API response to uppercase model
+      this.webhookUrls = response.webhooksUrl.map((webhook: any) => ({
+        Name: webhook.name,  // Transform name -> Name
+        Url: webhook.url     // Transform url -> Url
+      }));
+      
+      console.log('Transformed webhooks:', this.webhookUrls);
+      this.showPopupMessage(`${this.webhookUrls.length} webhook URL(s) loaded successfully!`, 'success');
+    } else {
       this.webhookUrls = [];
-      const errorMessage = error.error?.message || error.message || 'Failed to load webhook URLs';
-      this.showPopupMessage(errorMessage, 'error');
+      this.showPopupMessage('No webhook URLs found', 'success');
     }
+  } catch (error: any) {
+    console.error('Error loading webhooks:', error);
+    this.webhookUrls = [];
+    this.showPopupMessage('Error loading webhooks', 'error');
   }
+}
 
   openWebhookModal(): void {
     this.newWebhook = { name: '', url: '' };
@@ -95,6 +129,11 @@ export class SettingsComponent implements OnInit {
 
   validateWebhookUrl(): boolean {
     this.webhookError = '';
+
+    if (!this.newWebhook.name.trim()) {
+      this.webhookError = 'Webhook name is required';
+      return false;
+    }
 
     if (!this.newWebhook.url.trim()) {
       this.webhookError = 'Webhook URL is required';
@@ -123,7 +162,7 @@ export class SettingsComponent implements OnInit {
     this.isSaving = true;
 
     const configData = {
-      name: this.newWebhook.name.trim() || `Webhook ${this.webhookUrls.length + 1}`,
+      name: this.newWebhook.name.trim(),
       url: this.newWebhook.url.trim()
     };
 
@@ -150,8 +189,8 @@ export class SettingsComponent implements OnInit {
     }
   }
 
-  async deleteWebhook(webhookUrl: string): Promise<void> {
-    if (!confirm('Are you sure you want to delete this webhook URL?')) {
+  async deleteWebhook(webhookUrl: string, webhookName: string): Promise<void> {
+    if (!confirm(`Are you sure you want to delete the webhook "${webhookName}"?`)) {
       return;
     }
 
@@ -170,6 +209,106 @@ export class SettingsComponent implements OnInit {
       console.error('Failed to delete webhook URL:', error);
       const errorMessage = error.error?.message || error.message || 'Failed to delete webhook URL';
       this.showPopupMessage(errorMessage, 'error');
+    }
+  }
+
+  // Telegram Configuration
+  async toggleTelegramConfig(): Promise<void> {
+    this.showTelegramConfig = !this.showTelegramConfig;
+    if (this.showTelegramConfig && !this.hasTelegramConfig) {
+      await this.loadTelegramConfig();
+    }
+  }
+
+  async loadTelegramConfig(): Promise<void> {
+    try {
+      const response = await this.apiService.getTelegramConfig().toPromise();
+      console.log('Telegram config response:', response);
+      
+      if (response && response.Success && response.Data) {
+        this.telegramConfig = response.Data;
+        this.hasTelegramConfig = true;
+        this.showPopupMessage('Telegram configuration loaded successfully!', 'success');
+      } else {
+        this.telegramConfig = { telegramToken: '', channelName: '' };
+        this.hasTelegramConfig = false;
+        this.showPopupMessage(response?.Message || 'No Telegram configuration found', 'success');
+      }
+    } catch (error: any) {
+      console.error('Failed to load Telegram config:', error);
+      this.telegramConfig = { telegramToken: '', channelName: '' };
+      this.hasTelegramConfig = false;
+      const errorMessage = error.error?.Message || error.error?.message || error.message || 'Failed to load Telegram configuration';
+      this.showPopupMessage(errorMessage, 'error');
+    }
+  }
+
+  openTelegramModal(): void {
+    this.newTelegramConfig = { ...this.telegramConfig };
+    this.telegramError = '';
+    this.showTelegramModal = true;
+  }
+
+  closeTelegramModal(): void {
+    this.showTelegramModal = false;
+    this.newTelegramConfig = { telegramToken: '', channelName: '' };
+    this.telegramError = '';
+  }
+
+  validateTelegramConfig(): boolean {
+    this.telegramError = '';
+
+    if (!this.newTelegramConfig.telegramToken.trim()) {
+      this.telegramError = 'Telegram bot token is required';
+      return false;
+    }
+
+    if (!this.newTelegramConfig.channelName.trim()) {
+      this.telegramError = 'Channel name is required';
+      return false;
+    }
+
+    // Basic validation for Telegram bot token format
+    if (!this.newTelegramConfig.telegramToken.includes(':')) {
+      this.telegramError = 'Please enter a valid Telegram bot token (format: 123456789:ABC-DEF...)';
+      return false;
+    }
+
+    return true;
+  }
+
+  async saveTelegramConfig(): Promise<void> {
+    if (!this.validateTelegramConfig()) {
+      return;
+    }
+
+    this.isSavingTelegram = true;
+
+    const configData = {
+      telegramToken: this.newTelegramConfig.telegramToken.trim(),
+      channelName: this.newTelegramConfig.channelName.trim()
+    };
+
+    try {
+      const response = await this.apiService.saveTelegramConfig(configData).toPromise();
+      console.log('Save Telegram config response:', response);
+      
+      if (response && response.Success) {
+        this.telegramConfig = { ...configData };
+        this.hasTelegramConfig = true;
+        this.closeTelegramModal();
+        this.showPopupMessage(response.Message || 'Telegram configuration saved successfully!', 'success');
+      } else {
+        this.telegramError = response?.Message || 'Failed to save Telegram configuration';
+        this.showPopupMessage(response?.Message || 'Failed to save Telegram configuration', 'error');
+      }
+    } catch (error: any) {
+      console.error('Failed to save Telegram config:', error);
+      const errorMessage = error.error?.Message || error.error?.message || error.message || 'Failed to save Telegram configuration. Please try again.';
+      this.telegramError = errorMessage;
+      this.showPopupMessage(errorMessage, 'error');
+    } finally {
+      this.isSavingTelegram = false;
     }
   }
 

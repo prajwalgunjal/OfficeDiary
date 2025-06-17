@@ -267,11 +267,18 @@
   }
 }
 
+.send-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
 .send-btn {
-  width: 100%;
   padding: 1rem 2rem;
-  background-color: var(--accent-color);
-  color: var(--bg-primary);
   border: none;
   border-radius: 8px;
   font-size: 1rem;
@@ -295,6 +302,20 @@
 
   .send-icon {
     font-size: 1.125rem;
+  }
+
+  &.google-chat {
+    background-color: var(--accent-color);
+    color: var(--bg-primary);
+  }
+
+  &.telegram {
+    background-color: #0088cc;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: #006699;
+    }
   }
 }
 

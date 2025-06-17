@@ -55,14 +55,24 @@
             <span class="count-text">Configured Webhook{{ webhookUrls.length > 1 ? 's' : '' }}</span>
           </div>
           <div class="webhook-list" *ngIf="webhookUrls.length > 0">
-            <div class="webhook-item" *ngFor="let webhookUrl of webhookUrls; let i = index">
-              <div class="webhook-info">
-                <span class="webhook-label">Webhook {{ i + 1 }}:</span>
-                <span class="webhook-url" [title]="webhookUrl">{{ webhookUrl }}</span>
+            <div class="webhook-card" *ngFor="let webhook of webhookUrls; let i = index">
+              <div class="webhook-header">
+                <div class="webhook-name">
+                  <span class="webhook-icon">🔗</span>
+                  <span class="name-text">{{ webhook.Name }}</span>
+                </div>
+                <button class="delete-webhook-btn" (click)="deleteWebhook(webhook.Url, webhook.Name)" [title]="'Delete ' + webhook.Name">
+                  <span>🗑️</span>
+                </button>
               </div>
-              <button class="delete-webhook-btn" (click)="deleteWebhook(webhookUrl)" [title]="'Delete webhook ' + (i + 1)">
-                <span>🗑️</span>
-              </button>
+              <div class="webhook-url-container">
+                <span class="webhook-label">URL:</span>
+                <span class="webhook-url" [title]="webhook.Url">{{ webhook.Url }}</span>
+              </div>
+              <div class="webhook-meta">
+                <span class="webhook-number">Webhook #{{ i + 1 }}</span>
+                <span class="webhook-status">✅ Active</span>
+              </div>
             </div>
           </div>
           <div class="no-webhooks" *ngIf="webhookUrls.length === 0">
@@ -84,6 +94,46 @@
         <button class="config-btn" (click)="openWebhookModal()">
           <span class="btn-icon">➕</span>
           Add Webhook URL
+        </button>
+      </div>
+    </div>
+
+    <div class="setting-item">
+      <div class="setting-info">
+        <h3>Telegram Configuration</h3>
+        <p>Configure Telegram bot for sending status updates</p>
+        <div class="telegram-config" *ngIf="showTelegramConfig">
+          <div class="config-status" *ngIf="hasTelegramConfig">
+            <div class="status-indicator success">
+              <span class="status-icon">✅</span>
+              <span class="status-text">Telegram is configured</span>
+            </div>
+            <div class="config-details">
+              <p><strong>Channel:</strong> {{ telegramConfig.channelName }}</p>
+              <p><strong>Bot Token:</strong> {{ telegramConfig.telegramToken.substring(0, 10) }}...</p>
+            </div>
+          </div>
+          <div class="config-status" *ngIf="!hasTelegramConfig">
+            <div class="status-indicator warning">
+              <span class="status-icon">⚠️</span>
+              <span class="status-text">Telegram not configured</span>
+            </div>
+            <p class="config-help">Configure your Telegram bot to start sending messages</p>
+          </div>
+        </div>
+      </div>
+      <div class="telegram-actions">
+        <button class="config-btn" (click)="toggleTelegramConfig()" *ngIf="!showTelegramConfig">
+          <span class="btn-icon">👁️</span>
+          Show Configuration
+        </button>
+        <button class="config-btn secondary" (click)="toggleTelegramConfig()" *ngIf="showTelegramConfig">
+          <span class="btn-icon">👁️‍🗨️</span>
+          Hide Configuration
+        </button>
+        <button class="config-btn" (click)="openTelegramModal()">
+          <span class="btn-icon">{{ hasTelegramConfig ? '✏️' : '➕' }}</span>
+          {{ hasTelegramConfig ? 'Edit Configuration' : 'Configure Telegram' }}
         </button>
       </div>
     </div>
@@ -124,12 +174,16 @@
 
       <div class="modal-body">
         <div class="form-group">
-          <label>Webhook Name</label>
+          <label>Webhook Name *</label>
           <input 
             type="text" 
             [(ngModel)]="newWebhook.name" 
-            placeholder="Enter webhook name (e.g., Team Chat)" 
-            class="form-input">
+            placeholder="Enter webhook name (e.g., Team Chat, Daily Updates)" 
+            class="form-input"
+            [class.error]="webhookError && !newWebhook.name.trim()">
+          <div class="help-text">
+            <small>Give your webhook a descriptive name to easily identify it later.</small>
+          </div>
         </div>
 
         <div class="form-group">
@@ -139,7 +193,7 @@
             [(ngModel)]="newWebhook.url" 
             placeholder="https://chat.googleapis.com/v1/spaces/..." 
             class="form-input"
-            [class.error]="webhookError">
+            [class.error]="webhookError && !newWebhook.url.trim()">
           <div class="error-message" *ngIf="webhookError">{{ webhookError }}</div>
           <div class="help-text">
             <p>To get your Google Chat webhook URL:</p>
@@ -158,9 +212,71 @@
         <button 
           class="save-btn" 
           (click)="addWebhookUrl()" 
-          [disabled]="isSaving || !newWebhook.url">
+          [disabled]="isSaving || !newWebhook.url.trim() || !newWebhook.name.trim()">
           <span class="btn-icon" *ngIf="isSaving">⏳</span>
+          <span class="btn-icon" *ngIf="!isSaving">➕</span>
           {{ isSaving ? 'Adding...' : 'Add Webhook' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Telegram Configuration Modal -->
+  <div class="modal-overlay" *ngIf="showTelegramModal" (click)="closeTelegramModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>📱 Configure Telegram Bot</h2>
+        <button class="modal-close-btn" (click)="closeTelegramModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Telegram Bot Token *</label>
+          <input 
+            type="text" 
+            [(ngModel)]="newTelegramConfig.telegramToken" 
+            placeholder="123456789:ABC-DEF1234ghIkl-zyx57W2v1u123ew11" 
+            class="form-input"
+            [class.error]="telegramError && !newTelegramConfig.telegramToken.trim()">
+          <div class="help-text">
+            <p>To get your Telegram bot token:</p>
+            <ol>
+              <li>Message BotFather on Telegram</li>
+              <li>Send /newbot and follow the instructions</li>
+              <li>Copy the bot token provided</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Channel Name *</label>
+          <input 
+            type="text" 
+            [(ngModel)]="newTelegramConfig.channelName" 
+            placeholder="@your_channel or -1001234567890" 
+            class="form-input"
+            [class.error]="telegramError && !newTelegramConfig.channelName.trim()">
+          <div class="error-message" *ngIf="telegramError">{{ telegramError }}</div>
+          <div class="help-text">
+            <p>Channel name formats:</p>
+            <ul>
+              <li>Public channel: channel_name</li>
+              <li>Private channel: -1001234567890 (chat ID)</li>
+              <li>Direct message: Use your user ID</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="cancel-btn" (click)="closeTelegramModal()">Cancel</button>
+        <button 
+          class="save-btn" 
+          (click)="saveTelegramConfig()" 
+          [disabled]="isSavingTelegram || !newTelegramConfig.telegramToken.trim() || !newTelegramConfig.channelName.trim()">
+          <span class="btn-icon" *ngIf="isSavingTelegram">⏳</span>
+          <span class="btn-icon" *ngIf="!isSavingTelegram">💾</span>
+          {{ isSavingTelegram ? 'Saving...' : 'Save Configuration' }}
         </button>
       </div>
     </div>

@@ -73,55 +73,119 @@
 
 .webhook-urls {
   margin-top: 1rem;
-  padding: 1rem;
+  padding: 1.5rem;
   background-color: var(--bg-primary);
-  border-radius: 8px;
+  border-radius: 12px;
   border: 1px solid var(--border-color);
 }
 
-.webhook-item {
+.webhook-count {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 0;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
   border-bottom: 1px solid var(--border-color);
 
-  &:last-child {
-    border-bottom: none;
+  .count-badge {
+    background-color: var(--accent-color);
+    color: var(--bg-primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    min-width: 2rem;
+    text-align: center;
+  }
+
+  .count-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
   }
 }
 
-.webhook-info {
-  flex: 1;
+.webhook-list {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 1rem;
+}
+
+.webhook-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 1.25rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-color: var(--accent-color);
+  }
+}
+
+.webhook-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.webhook-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .webhook-icon {
+    font-size: 1.125rem;
+  }
+
+  .name-text {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+}
+
+.webhook-url-container {
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  background-color: var(--bg-primary);
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
 
   .webhook-label {
     font-size: 0.75rem;
     color: var(--text-muted);
     font-weight: 500;
+    display: block;
+    margin-bottom: 0.25rem;
   }
 
   .webhook-url {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
     word-break: break-all;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    line-height: 1.4;
   }
 }
 
-.no-webhooks {
-  margin-top: 1rem;
-  padding: 1rem;
-  background-color: var(--bg-primary);
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  text-align: center;
+.webhook-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
-  p {
+  .webhook-number {
+    font-size: 0.75rem;
     color: var(--text-muted);
-    font-style: italic;
-    margin: 0;
+    font-weight: 500;
+  }
+
+  .webhook-status {
+    font-size: 0.75rem;
+    color: #28a745;
+    font-weight: 500;
   }
 }
 
@@ -129,20 +193,116 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0.25rem;
+  padding: 0.5rem;
   font-size: 1rem;
   color: var(--text-muted);
-  transition: color 0.2s ease;
+  border-radius: 6px;
+  transition: all 0.2s ease;
 
   &:hover {
     color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.1);
   }
 }
 
-.webhook-actions {
+.no-webhooks {
+  text-align: center;
+  padding: 3rem 1rem;
+
+  .no-webhooks-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: var(--text-muted);
+    font-style: italic;
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+  }
+
+  small {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+  }
+}
+
+.webhook-actions, .telegram-actions {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
+}
+
+// Telegram Configuration Styles
+.telegram-config {
+  margin-top: 1rem;
+  padding: 1.5rem;
+  background-color: var(--bg-primary);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.config-status {
+  margin-bottom: 1rem;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+
+  &.success {
+    .status-icon {
+      color: #28a745;
+    }
+    .status-text {
+      color: #28a745;
+      font-weight: 600;
+    }
+  }
+
+  &.warning {
+    .status-icon {
+      color: #ffc107;
+    }
+    .status-text {
+      color: #856404;
+      font-weight: 600;
+    }
+  }
+
+  .status-icon {
+    font-size: 1.125rem;
+  }
+
+  .status-text {
+    font-size: 0.875rem;
+  }
+}
+
+.config-details {
+  padding: 0.75rem;
+  background-color: var(--bg-secondary);
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+
+  p {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin: 0.25rem 0;
+
+    strong {
+      color: var(--text-primary);
+    }
+  }
+}
+
+.config-help {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 0;
 }
 
 .theme-toggle-btn {
@@ -187,6 +347,7 @@
 
   &:hover {
     transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
 
   &.secondary {
@@ -417,7 +578,7 @@
 }
 
 .help-text {
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   padding: 1rem;
   background-color: var(--bg-secondary);
   border-radius: 8px;
@@ -430,7 +591,13 @@
     font-weight: 500;
   }
 
-  ol {
+  small {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  ol, ul {
     margin: 0;
     padding-left: 1.25rem;
 

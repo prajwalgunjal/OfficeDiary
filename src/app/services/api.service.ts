@@ -42,11 +42,36 @@ export interface ResponseModel<T> {
   Data: T;
 }
 
-// Backend Response for webhook operations (matches your actual response)
+// Webhook URL with name model
+export interface WebhookUrlModel {
+  Name: string;
+  Url: string;
+}
+
+// Backend Response for webhook operations (updated to match your new response)
 export interface WebhookResponse {
   message: string;
-  webhooksUrl: string[];
+  webhooksUrl: WebhookUrlModel[];
   employeeId: string;
+}
+
+// Response model for getting webhooks (matches your backend ResponseModel)
+export interface GetWebhooksResponse {
+  Success: boolean;
+  Message: string;
+  Data: WebhookUrlModel[];
+}
+
+// Telegram configuration interfaces
+export interface TelegramConfigData {
+  telegramToken: string;
+  channelName: string;
+}
+
+export interface TelegramResponse {
+  Success: boolean;
+  Message: string;
+  Data?: any;
 }
 
 @Injectable({
@@ -60,6 +85,25 @@ export class ApiService {
     private authService: AuthService
   ) {}
 
+  // Telegram messaging
+  sendToTelegram(data: StatusUpdateData): Observable<TelegramResponse> {
+    return this.http.post<TelegramResponse>(`${this.baseUrl}Task/SendToTelegram`, data, {
+      headers: this.authService.getAuthHeaders()
+    });
+  }
+
+  // Telegram configuration
+  saveTelegramConfig(data: TelegramConfigData): Observable<TelegramResponse> {
+    return this.http.post<TelegramResponse>(`${this.baseUrl}Task/SaveTelegramConfig`, data, {
+      headers: this.authService.getAuthHeaders()
+    });
+  }
+
+  getTelegramConfig(): Observable<TelegramResponse> {
+    return this.http.get<TelegramResponse>(`${this.baseUrl}Task/GetTelegramConfig`, {
+      headers: this.authService.getAuthHeaders()
+    });
+  }
   sendToGoogleChat(data: StatusUpdateData): Observable<any> {
     return this.http.post(`${this.baseUrl}Task/SendToGoogleChat`, data, {
       headers: this.authService.getAuthHeaders()
@@ -78,21 +122,21 @@ export class ApiService {
     });
   }
 
-  // Webhook Management - Updated to match your actual backend response
+  // Webhook Management - Updated to handle name and URL
   addWebhookUrl(data: { name: string; url: string }): Observable<WebhookResponse> {
     return this.http.post<WebhookResponse>(`${this.baseUrl}Task/SaveWebhooksURL`, data, {
       headers: this.authService.getAuthHeaders()
     });
   }
 
-  getWebhookUrls(): Observable<WebhookResponse> {
-    return this.http.get<WebhookResponse>(`${this.baseUrl}Task/GetWebhooks`, {
+  getWebhookUrls(): Observable<GetWebhooksResponse> {
+    return this.http.get<GetWebhooksResponse>(`${this.baseUrl}Task/GetWebhooks`, {
       headers: this.authService.getAuthHeaders()
     });
   }
 
   deleteWebhookUrl(webhookUrl: string): Observable<WebhookResponse> {
-    return this.http.delete<WebhookResponse>(`${this.baseUrl}Task/DeleteWebhook/${encodeURIComponent(webhookUrl)}`, {
+    return this.http.delete<WebhookResponse>(`${this.baseUrl}/Task/DeleteWebhook/${encodeURIComponent(webhookUrl)}`, {
       headers: this.authService.getAuthHeaders()
     });
   }
@@ -115,7 +159,7 @@ export class ApiService {
     return this.addWebhookUrl({ name: 'Default Webhook', url: data.webhookUrl });
   }
 
-  getWebhookConfig(): Observable<WebhookResponse> {
+  getWebhookConfig(): Observable<GetWebhooksResponse> {
     return this.getWebhookUrls();
   }
 }

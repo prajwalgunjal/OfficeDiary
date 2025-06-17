@@ -16,6 +16,7 @@ export class DashboardComponent implements OnInit {
   tasks: TaskData[] = [];
   livePreview = '';
   isLoading = false;
+  isSendingTelegram = false;
   showScheduleModal = false;
   isScheduling = false;
   minDate = '';
@@ -92,13 +93,42 @@ export class DashboardComponent implements OnInit {
 
     try {
       await this.apiService.sendToGoogleChat(statusData).toPromise();
-      console.log('Status sent successfully!');
+      console.log('Status sent successfully to Google Chat!');
       this.showPopupMessage('Status update sent successfully to Google Chat!', 'success');
     } catch (error) {
-      console.error('Failed to send status:', error);
-      this.showPopupMessage('Failed to send status update. Please try again.', 'error');
+      console.error('Failed to send status to Google Chat:', error);
+      this.showPopupMessage('Failed to send status update to Google Chat. Please try again.', 'error');
     } finally {
       this.isLoading = false;
+    }
+  }
+
+  async sendToTelegram(): Promise<void> {
+    if (this.tasks.length === 0) return;
+
+    this.isSendingTelegram = true;
+    
+    const statusData: StatusUpdateData = {
+      tasks: this.tasks,
+      messageTemplate: this.messageService.getSelectedTemplate(),
+      formattedMessage: this.livePreview
+    };
+
+    try {
+      const response = await this.apiService.sendToTelegram(statusData).toPromise();
+      console.log('Status sent successfully to Telegram!', response);
+      
+      if (response && response.Success) {
+        this.showPopupMessage(response.Message || 'Status update sent successfully to Telegram!', 'success');
+      } else {
+        this.showPopupMessage(response?.Message || 'Failed to send status update to Telegram.', 'error');
+      }
+    } catch (error: any) {
+      console.error('Failed to send status to Telegram:', error);
+      const errorMessage = error.error?.Message || error.error?.message || error.message || 'Failed to send status update to Telegram. Please check your Telegram configuration.';
+      this.showPopupMessage(errorMessage, 'error');
+    } finally {
+      this.isSendingTelegram = false;
     }
   }
 

@@ -102,13 +102,23 @@
       </div>
     </div>
 
-    <button 
-      class="send-btn" 
-      (click)="sendToGoogleChat()" 
-      [disabled]="isLoading || tasks.length === 0">
-      <span class="send-icon">📤</span>
-      {{ isLoading ? 'Sending...' : 'Send to Google Chat' }}
-    </button>
+    <div class="send-buttons">
+      <button 
+        class="send-btn google-chat" 
+        (click)="sendToGoogleChat()" 
+        [disabled]="isLoading || tasks.length === 0">
+        <span class="send-icon">📤</span>
+        {{ isLoading ? 'Sending...' : 'Send to Google Chat' }}
+      </button>
+
+      <button 
+        class="send-btn telegram" 
+        (click)="sendToTelegram()" 
+        [disabled]="isSendingTelegram || tasks.length === 0">
+        <span class="send-icon">📱</span>
+        {{ isSendingTelegram ? 'Sending...' : 'Send to Telegram' }}
+      </button>
+    </div>
   </div>
 
   <!-- Success/Error Popup -->
