@@ -48,18 +48,18 @@ export interface WebhookUrlModel {
   Url: string;
 }
 
-// Backend Response for webhook operations (updated to match your new response)
+// Backend Response for webhook operations (matches your actual backend response)
 export interface WebhookResponse {
   message: string;
-  webhooksUrl: WebhookUrlModel[];
-  employeeId: string;
+  webhooksUrl: WebhookUrlModel[] | any;
+  employeeId: string | number;
 }
 
-// Response model for getting webhooks (matches your backend ResponseModel)
+// Response model for getting webhooks (matches your actual backend response)
 export interface GetWebhooksResponse {
-  Success: boolean;
-  Message: string;
-  Data: WebhookUrlModel[];
+  message: string;
+  webhooksUrl: any[];
+  employeeId: string | number;
 }
 
 // Telegram configuration interfaces
@@ -68,10 +68,21 @@ export interface TelegramConfigData {
   channelName: string;
 }
 
+// Updated to match your actual backend response format
 export interface TelegramResponse {
-  Success: boolean;
-  Message: string;
-  Data?: any;
+  message: string;
+  webhooksUrl?: any;
+  employeeId?: string | number;
+  success?: boolean;
+  messageTemplate?: string;
+  processedTasks?: number;
+}
+
+// Telegram config response (matches your backend format)
+export interface TelegramConfigResponse {
+  message: string;
+  webhooksUrl: TelegramConfigData[];
+  employeeId: string | number;
 }
 
 @Injectable({
@@ -99,8 +110,8 @@ export class ApiService {
     });
   }
 
-  getTelegramConfig(): Observable<TelegramResponse> {
-    return this.http.get<TelegramResponse>(`${this.baseUrl}Task/GetTelegramConfig`, {
+  getTelegramConfig(): Observable<TelegramConfigResponse> {
+    return this.http.get<TelegramConfigResponse>(`${this.baseUrl}Task/GetTelegramConfig`, {
       headers: this.authService.getAuthHeaders()
     });
   }

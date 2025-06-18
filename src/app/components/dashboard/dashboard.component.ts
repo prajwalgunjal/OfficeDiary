@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiService, TaskData, StatusUpdateData, ScheduledTaskData, ScheduleTaskData } from '../../services/api.service';
+import { ApiService, TaskData, StatusUpdateData, ScheduledTaskData, ScheduleTaskData, TelegramResponse } from '../../services/api.service';
 import { MessageService } from '../../services/message.service';
 import { ThemeService } from '../../services/theme.service';
 
@@ -118,14 +118,16 @@ export class DashboardComponent implements OnInit {
       const response = await this.apiService.sendToTelegram(statusData).toPromise();
       console.log('Status sent successfully to Telegram!', response);
       
-      if (response && response.Success) {
-        this.showPopupMessage(response.Message || 'Status update sent successfully to Telegram!', 'success');
+      // Handle your backend response format
+      if (response && (response.success || response.message)) {
+        const successMessage = response.message || 'Status update sent successfully to Telegram!';
+        this.showPopupMessage(successMessage, 'success');
       } else {
-        this.showPopupMessage(response?.Message || 'Failed to send status update to Telegram.', 'error');
+        this.showPopupMessage('Failed to send status update to Telegram.', 'error');
       }
     } catch (error: any) {
       console.error('Failed to send status to Telegram:', error);
-      const errorMessage = error.error?.Message || error.error?.message || error.message || 'Failed to send status update to Telegram. Please check your Telegram configuration.';
+      const errorMessage = error.error?.message || error.message || 'Failed to send status update to Telegram. Please check your Telegram configuration.';
       this.showPopupMessage(errorMessage, 'error');
     } finally {
       this.isSendingTelegram = false;

@@ -1,7 +1,7 @@
 <div class="settings">
   <div class="settings-header">
     <h1>⚙️ Settings</h1>
-    <p>Customize your StatusSync experience</p>
+    <p>Customize your OfficeDiary experience</p>
   </div>
 
   <div class="settings-section">
@@ -49,6 +49,20 @@
       <div class="setting-info">
         <h3>Google Chat Webhooks</h3>
         <p>Configure your Google Chat webhook URLs for status updates</p>
+        <div class="webhook-actions">
+        <button class="config-btn" (click)="toggleWebhookUrls()" *ngIf="!showWebhookUrls">
+          <span class="btn-icon">👁️</span>
+          Show Configured URLs
+        </button>
+        <button class="config-btn secondary" (click)="toggleWebhookUrls()" *ngIf="showWebhookUrls">
+          <span class="btn-icon">👁️‍🗨️</span>
+          Hide URLs
+        </button>
+        <button class="config-btn" (click)="openWebhookModal()">
+          <span class="btn-icon">➕</span>
+          Add Webhook URL
+        </button>
+      </div>
         <div class="webhook-urls" *ngIf="showWebhookUrls">
           <div class="webhook-count" *ngIf="webhookUrls.length > 0">
             <span class="count-badge">{{ webhookUrls.length }}</span>
@@ -82,26 +96,26 @@
           </div>
         </div>
       </div>
-      <div class="webhook-actions">
-        <button class="config-btn" (click)="toggleWebhookUrls()" *ngIf="!showWebhookUrls">
-          <span class="btn-icon">👁️</span>
-          Show Configured URLs
-        </button>
-        <button class="config-btn secondary" (click)="toggleWebhookUrls()" *ngIf="showWebhookUrls">
-          <span class="btn-icon">👁️‍🗨️</span>
-          Hide URLs
-        </button>
-        <button class="config-btn" (click)="openWebhookModal()">
-          <span class="btn-icon">➕</span>
-          Add Webhook URL
-        </button>
-      </div>
     </div>
 
     <div class="setting-item">
       <div class="setting-info">
         <h3>Telegram Configuration</h3>
         <p>Configure Telegram bot for sending status updates</p>
+        <div class="telegram-actions">
+        <button class="config-btn" (click)="toggleTelegramConfig()" *ngIf="!showTelegramConfig">
+          <span class="btn-icon">👁️</span>
+          Show Configuration
+        </button>
+        <button class="config-btn secondary" (click)="toggleTelegramConfig()" *ngIf="showTelegramConfig">
+          <span class="btn-icon">👁️‍🗨️</span>
+          Hide Configuration
+        </button>
+        <button class="config-btn" (click)="openTelegramModal()">
+          <span class="btn-icon">{{ hasTelegramConfig ? '✏️' : '➕' }}</span>
+          {{ hasTelegramConfig ? 'Edit Configuration' : 'Configure Telegram' }}
+        </button>
+      </div>
         <div class="telegram-config" *ngIf="showTelegramConfig">
           <div class="config-status" *ngIf="hasTelegramConfig">
             <div class="status-indicator success">
@@ -122,20 +136,6 @@
           </div>
         </div>
       </div>
-      <div class="telegram-actions">
-        <button class="config-btn" (click)="toggleTelegramConfig()" *ngIf="!showTelegramConfig">
-          <span class="btn-icon">👁️</span>
-          Show Configuration
-        </button>
-        <button class="config-btn secondary" (click)="toggleTelegramConfig()" *ngIf="showTelegramConfig">
-          <span class="btn-icon">👁️‍🗨️</span>
-          Hide Configuration
-        </button>
-        <button class="config-btn" (click)="openTelegramModal()">
-          <span class="btn-icon">{{ hasTelegramConfig ? '✏️' : '➕' }}</span>
-          {{ hasTelegramConfig ? 'Edit Configuration' : 'Configure Telegram' }}
-        </button>
-      </div>
     </div>
   </div>
 
@@ -144,7 +144,7 @@
     <div class="setting-item">
       <div class="setting-info">
         <h3>Sign Out</h3>
-        <p>Sign out of your StatusSync account</p>
+        <p>Sign out of your OfficeDiary account</p>
       </div>
       <button class="logout-btn" (click)="logout()">
         <span class="logout-icon">🚪</span>
@@ -241,7 +241,7 @@
           <div class="help-text">
             <p>To get your Telegram bot token:</p>
             <ol>
-              <li>Message BotFather on Telegram</li>
+              <li>Message &#64;BotFather on Telegram</li>
               <li>Send /newbot and follow the instructions</li>
               <li>Copy the bot token provided</li>
             </ol>
@@ -253,14 +253,14 @@
           <input 
             type="text" 
             [(ngModel)]="newTelegramConfig.channelName" 
-            placeholder="@your_channel or -1001234567890" 
+            placeholder="&#64;your_channel or -1001234567890" 
             class="form-input"
             [class.error]="telegramError && !newTelegramConfig.channelName.trim()">
           <div class="error-message" *ngIf="telegramError">{{ telegramError }}</div>
           <div class="help-text">
             <p>Channel name formats:</p>
             <ul>
-              <li>Public channel: channel_name</li>
+              <li>Public channel: &#64;channel_name</li>
               <li>Private channel: -1001234567890 (chat ID)</li>
               <li>Direct message: Use your user ID</li>
             </ul>
